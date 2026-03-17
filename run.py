@@ -56,11 +56,12 @@ server = http.server.HTTPServer(('0.0.0.0', 3000), StatusHandler)
 print(f"HTTP server on :3000 | chunk={CHUNK} delay={DELAY}")
 threading.Thread(target=server.serve_forever, daemon=True).start()
 
-# Run RDAP worker
+# Run RDAP worker as subprocess (keep HTTP server alive)
 domains_file = f'domains_chunk{CHUNK}.txt'
 print(f"Starting RDAP worker: {domains_file} delay={DELAY}s")
-os.execvp(sys.executable, [
+proc = subprocess.Popen([
     sys.executable, '-u', 'rdap_worker.py',
     domains_file, RESULTS_FILE,
     '--delay', DELAY
 ])
+proc.wait()
