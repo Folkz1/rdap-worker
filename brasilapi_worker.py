@@ -95,12 +95,16 @@ for i, row in enumerate(rows):
         errors = 0
     except Exception as e:
         errors += 1
-        if '429' in str(e):
+        err_str = str(e)
+        err_code = getattr(e, 'code', 0)
+        if errors <= 3 or errors % 50 == 0:
+            print(f'Error #{errors} cnpj={cnpj_raw}: {type(e).__name__} code={err_code} {err_str[:120]}', flush=True)
+        if err_code == 429 or '429' in err_str:
             print(f'Rate limit! Sleeping 60s...', flush=True)
             time.sleep(60)
             errors = 0
         elif errors >= 10:
-            print(f'10 errors, sleeping 30s...', flush=True)
+            print(f'10 errors (last: {type(e).__name__} {err_code}), sleeping 30s...', flush=True)
             time.sleep(30)
             errors = 0
         else:
