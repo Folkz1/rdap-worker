@@ -130,16 +130,18 @@ try:
     upload_url = f'https://uploads.github.com/repos/Folkz1/rdap-worker/releases/assets?name=brasilapi_{SERVER_NAME}_{START_IDX}_{END_IDX}.json'
     data = open(OUT, 'rb').read()
     # Get release ID first
+    gh_token = os.environ.get('GITHUB_TOKEN', '')
     rel_req = urllib.request.Request(
         'https://api.github.com/repos/Folkz1/rdap-worker/releases/tags/v1.0',
-        headers={'Authorization': f'token {os.environ.get(\"GITHUB_TOKEN\",\"\")}', 'Accept': 'application/vnd.github.v3+json'}
+        headers={'Authorization': f'token {gh_token}', 'Accept': 'application/vnd.github.v3+json'}
     )
     rel_data = json.loads(urllib.request.urlopen(rel_req, timeout=10).read())
-    upload_url = rel_data.get('upload_url','').replace('{?name,label}', f'?name=brasilapi_{SERVER_NAME}_{START_IDX}_{END_IDX}.json')
-    if upload_url and os.environ.get('GITHUB_TOKEN'):
+    asset_name = f'brasilapi_{SERVER_NAME}_{START_IDX}_{END_IDX}.json'
+    upload_url = rel_data.get('upload_url', '').replace('{?name,label}', f'?name={asset_name}')
+    if upload_url and gh_token:
         up_req = urllib.request.Request(
             upload_url, data=data,
-            headers={'Authorization': f'token {os.environ.get(\"GITHUB_TOKEN\")}',
+            headers={'Authorization': f'token {gh_token}',
                      'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json'},
             method='POST'
         )
